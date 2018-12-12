@@ -2,16 +2,17 @@ import unittest
 from appium import webdriver
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
-# from selenium.webdriver.common.by import By
-from threading import Thread
-
 import time,os
+import warnings
+from selenium.common.exceptions import TimeoutException
 
 class MyTestCase(unittest.TestCase):
     appPath = ""
 
+
     @classmethod
     def setUpClass(cls):
+        warnings.simplefilter("ignore",ResourceWarning)
         desired_caps = {}
         cls.appPath = os.path.abspath(os.path.join(os.path.curdir,"app","dongman-qa-1.4.9_qa_1128.apk"))
         desired_caps['platformName'] = 'Android'
@@ -32,40 +33,53 @@ class MyTestCase(unittest.TestCase):
         cls.window_size = cls.wd.get_window_size()
         cls.width = cls.window_size["width"]
         cls.height = cls.window_size["height"]
-    def test1_permission_allow(self):
-        loc = ("id", "com.android.packageinstaller:id/permission_allow_button")
-        e = WebDriverWait(self.wd,10).until(EC.presence_of_element_located(loc))
-        e.click()
-        time.sleep(2)
-        self.wd.save_screenshot("首页.png")
 
-    def test3_My(self):
-        # banner_page = ("id","com.naver.linewebtoon.cn:id/banner_pager")
-        # WebDriverWait(self.wd, 10).until(EC.presence_of_element_located(banner_page))
-        my = self.wd.find_element_by_android_uiautomator('new UiSelector().text("MY")')
-        my.click()
-        dl = self.wd.find_element_by_android_uiautomator('new UiSelector().text("登录")')
-        zhgl = self.wd.find_element_by_android_uiautomator('new UiSelector().text("账号管理")')
-        dmxx = self.wd.find_element_by_android_uiautomator('new UiSelector().text("咚漫消息")')
-        tssz = self.wd.find_element_by_android_uiautomator('new UiSelector().text("推送设置")')
-        yjfk = self.wd.find_element_by_android_uiautomator('new UiSelector().text("意见反馈")')
-        appxx = self.wd.find_element_by_android_uiautomator('new UiSelector().text("APP信息")')
-        if dl and zhgl and dmxx and tssz and yjfk and appxx:
-            return True
+    def test1_loginByPasswd(self,first=True):
+        if first:
+            loc = ("id", "com.android.packageinstaller:id/permission_allow_button")
+            try:
+                e = WebDriverWait(self.wd,10).until(EC.presence_of_element_located(loc))
+                e.click()
+                time.sleep(2)
+            except TimeoutException as e:
+                print(e)
+            self.wd.save_screenshot("首页.png")
+            my = self.wd.find_element_by_android_uiautomator('new UiSelector().text("MY")')
+            my.click()
+            login_btn = self.wd.find_element_by_android_uiautomator('new UiSelector().text("登录")')
+            login_btn.click()
+        switch_login = self.wd.find_element_by_id("com.naver.linewebtoon.cn:id/login_page_login_type")
+        switch_login_text = switch_login.get_attribute("text")
+        if switch_login_text == "验证码登录":
+            print("当前为密码登录状态")
+            input_id = self.wd.find_element_by_id("com.naver.linewebtoon.cn:id/input_id")
+            input_password = self.wd.find_element_by_id("com.naver.linewebtoon.cn:id/input_password")
+            input_id.clear()
+            input_password.clear()
+            input_id.send_keys("newjiaozi@163.com")
+            input_password.send_keys("qwe123")
+            login_btn = self.wd.find_element_by_id("com.naver.linewebtoon.cn:id/btn_log_in")
+            login_btn.click()
+            try:
+                WebDriverWait(self.wd,10).until(lambda x:"登录成功" in x.page_source)
+                print("登录成功")
+                self.wd.save_screenshot("登录成功.png")
+                WebDriverWait(self.wd, 10).until(lambda x: "登录成功" not in x.page_source)
+                self.wd.save_screenshot("登录成功消失.png")
+                nickname = self.wd.find_element_by_id("com.naver.linewebtoon.cn:id/personNickname")
+                self.assertEqual("hehehe睡觉睡觉",nickname.get_attribute("text"))
+                return True
+            except Exception as e:
+                print(e)
+                return False
 
-    def test4_login(self):
-        dl = self.wd.find_element_by_android_uiautomator('new UiSelector().text("登录")')
-        dl.click()
-        phone_input = self.wd.find_element_by_android_uiautomator('new UiSelector().text("请输入手机号")')
-        code_input = self.wd.find_element_by_android_uiautomator('new UiSelector().text("请输入短信验证码")')
-        send_code = self.wd.find_element_by_android_uiautomator('new UiSelector().resourceId("com.naver.linewebtoon.cn:id/login_page_get_vc")')
-        phone_input.clear()
-        phone_input.send_keys("13683581996")
-        send_code.click()
-        code_input.clear()
-        code = input("输入验证码：")
-        code_input.send_keys(code)
+        elif switch_login_text == "密码登录":
+            print("当前为验证码登录状态")
+            switch_login.click()
+            self.test1_loginByPasswd(first=False)
 
+        else:
+            print("有错误！")
 
 
     def swipeUp(self, n=5):
@@ -123,7 +137,7 @@ class MyTestCase(unittest.TestCase):
             self.wd.swipe(x1, y1, x2, y1)
 
     @classmethod
-    def tearDown(cls):
+    def tearDownClass(cls):
         cls.wd.quit()
 
 if __name__ == '__main__':
