@@ -1,10 +1,10 @@
 #coding=utf-8
 
 from ..pageobject.myPage import MyPageWithoutLogin as MPWOL
-from ..pageobject.myPage import PasswdLoginPage as PLP
+from ..pageobject.myPage import LoginPage as LP
 from ..pageobject.myPage import CodeLoginPage as CLP
 from ..pageobject.myPage import AccountManage as AM
-from ..pageobject.myPage import PasswdQuickLoginPage as PQLP
+from ..pageobject.myPage import QuickLoginPage as QLP
 from ..pageobject.myPage import MyPageWithLogin as MPWL
 
 from .basePageAction import BasePageAction
@@ -42,7 +42,10 @@ class MyPageAction(BasePageAction):
         return res
 
     def clickPersonInfo(self):
-        return self.waitClick(MPWOL.PERSONINFO)
+        cb = self.waitPresents(LP.CLOSEBTN,seconds=5)
+        if cb:
+            return True ##
+        return self.waitClick(MPWOL.PERSONINFO,seconds=2)
 
     def clickAccountManage(self):
         return self.waitClick(MPWOL.ACCOUNTMANAGE)
@@ -60,6 +63,9 @@ class MyPageAction(BasePageAction):
         return self.waitClick(MPWOL.APPINFO)
 
     def getInMyPage(self):
+        cb = self.waitPresents(LP.CLOSEBTN,seconds=5)
+        if cb:
+            return True ##
         my = self.switchPage(MPWOL.MY)
         if my :
             if my.is_selected():
@@ -120,12 +126,14 @@ class MyPageAction(BasePageAction):
             return True
 
     def loginByPasswd(self,user,passwd,checkMsg,checkNickname,checkUserId,backInit,quickLogin,desc):
-        if quickLogin:
-            self.waitClick(PQLP.QUICKLOGIN)
-            passwd = self.waitPresents(PQLP.PASSWORD)
+        if quickLogin and quickLogin.strip().lower() == "yes":
+            self.waitClick(LP.CLOSEBTN)
+            self.clickPersonInfo()
+            self.waitClick(QLP.QUICKLOGIN)
+            passwd = self.waitPresents(QLP.PASSWORD)
             passwd.clear()
             passwd.send_keys(passwd)
-            self.waitClick(PQLP.QUICKLOGIN)
+            self.waitClick(QLP.QUICKLOGIN)
             if checkMsg:
                 self.waitTextInPage(text=checkMsg, screenshot=desc + checkMsg)
             if checkNickname:
@@ -139,16 +147,19 @@ class MyPageAction(BasePageAction):
                 self.waitClick(AM.OTHERLOGINMETHOD)
             return True
         else:
+            close = self.waitPresents(QLP.CLOSE,seconds=3)
+            if close:
+                close.click()
             switchBtn = self.waitPresents(CLP.SWITCHLOGIN)
             if switchBtn:
                 if switchBtn.get_attribute("text") == "验证码登录":
-                    user_input = self.waitPresents(PLP.MOBILEINPUT)
+                    user_input = self.waitPresents(LP.MOBILEINPUT)
                     user_input.clear()
                     user_input.send_keys(user)
-                    passwd_input = self.waitPresents(PLP.PASSWDINPUT)
+                    passwd_input = self.waitPresents(LP.PASSWDINPUT)
                     passwd_input.clear()
                     passwd_input.send_keys(passwd)
-                    self.waitClick(PLP.LOGINSUBMIT)
+                    self.waitClick(LP.LOGINSUBMIT)
                     if checkMsg:
                         self.waitTextInPage(text=checkMsg,screenshot=desc+checkMsg)
                     if checkNickname:
@@ -167,7 +178,6 @@ class MyPageAction(BasePageAction):
             else:
                 print("未获取到元素：com.naver.linewebtoon.cn:id/login_page_login_type")
                 return False
-
 
     def loginByCode(self,user,passwd,submit=True,msg=""):
         switchBtn = self.waitPresents(CLP.SWITCHLOGIN)
@@ -190,21 +200,73 @@ class MyPageAction(BasePageAction):
             print("未获取到元素：com.naver.linewebtoon.cn:id/login_page_login_type")
             return False
 
-
     def loginByWechat(self,checkMsg,checkNickname,checkUserId,backInit,quickLogin,desc):
-        if quickLogin:
-            pass
+        if quickLogin and quickLogin.strip().lower() == "yes":
+            ql = self.waitPresents(QLP.QUICKLOGIN)
+            ql.click()
         else:
+            close = self.waitPresents(QLP.CLOSE,seconds=3)
+            if close:
+                close.click()
             wl = self.waitPresents(CLP.WECHATLOGIN)
             wl.click()
-            self.switchPage()
+        if checkMsg:
+            self.waitTextInPage(text=checkMsg, screenshot=desc + checkMsg)
+        if checkNickname:
+            self.waitTextInPage(text=checkNickname, screenshot=desc + checkNickname)
+            self.clickAccountManage()
+            self.waitTextInPage(text=checkNickname, screenshot=desc + checkNickname)
+        if checkUserId:
+            self.waitTextInPage(text=checkNickname, screenshot=desc + checkUserId)
+        if backInit:
+            self.waitClick(AM.LOGOUT)
+            self.waitClick(AM.OTHERLOGINMETHOD)
 
+    def loginByWeibo(self,checkMsg,checkNickname,checkUserId,backInit,quickLogin,desc):
+        if quickLogin and quickLogin.strip().lower() == "yes":
+            ql = self.waitPresents(QLP.QUICKLOGIN)
+            ql.click()
+        else:
+            close = self.waitPresents(QLP.CLOSE,seconds=3)
+            if close:
+                close.click()
+            wl = self.waitPresents(CLP.WEIBOLOGIN)
+            wl.click()
+            wbc = self.waitPresents(LP.WEIBOLOGINCONFIRM)
+            self.savePNG(desc+"微博确认登录")
+            wbc.click()
+        if checkMsg:
+            self.waitTextInPage(text=checkMsg, screenshot=desc + checkMsg)
+        if checkNickname:
+            self.waitTextInPage(text=checkNickname, screenshot=desc + checkNickname)
+            self.clickAccountManage()
+            self.waitTextInPage(text=checkNickname, screenshot=desc + checkNickname)
+        if checkUserId:
+            self.waitTextInPage(text=checkNickname, screenshot=desc + checkUserId)
+        if backInit:
+            self.waitClick(AM.LOGOUT)
+            self.waitClick(AM.OTHERLOGINMETHOD)
+        return True
 
-    def loginByWeibo(self):
-        pass
+    def loginByQQ(self,checkMsg,checkNickname,checkUserId,backInit,quickLogin,desc):
+        if quickLogin and quickLogin.strip().lower() == "yes":
+            ql = self.waitPresents(QLP.QUICKLOGIN)
+            ql.click()
+        else:
+            wl = self.waitPresents(CLP.QQLOGIN)
+            wl.click()
+        if checkMsg:
+            self.waitTextInPage(text=checkMsg, screenshot=desc + checkMsg)
+        if checkNickname:
+            self.waitTextInPage(text=checkNickname, screenshot=desc + checkNickname)
+            self.clickAccountManage()
+            self.waitTextInPage(text=checkNickname, screenshot=desc + checkNickname)
+        if checkUserId:
+            self.waitTextInPage(text=checkNickname, screenshot=desc + checkUserId)
+        if backInit:
+            self.waitClick(AM.LOGOUT)
+            self.waitClick(AM.OTHERLOGINMETHOD)
 
-    def loginByQQ(self):
-        pass
-
-    def loginOut(self):
-        pass
+    def loginOut(self,desc):
+        wl = self.waitPresents(AM.LOGOUT)
+        wl.click()

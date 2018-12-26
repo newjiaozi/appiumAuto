@@ -12,19 +12,23 @@ class MyPageTestcase(BaseTestcase):
 
     @data(*getTestData("testdata/RegressionTesting.xlsx","login"))
     @unpack
-    def test1_loginByPasswd(self,user,passwd,loginType,checkSplash,checkMsg,checkNickname,checkUserId,backInit,quickLogin,desc,whetherExecute):
-        if whetherExecute:
-            if checkSplash:
-                # if self.driver.is_app_installed("com.naver.linewebtoon.cn"):
-                #     self.driver.remove_app("com.naver.linewebtoon.cn")
-                #     self.driver.install_app(r"c:\Users\test12\Downloads\dongman-qa-1.4.9_qa_1128.apk")
-                # else:
-                #     self.driver.install_app(r"c:\Users\test12\Downloads\dongman-qa-1.4.9_qa_1128.apk")
-                self.assertTrue(self.BPA.checkSplash(checkMsg,backInit))
+    def test1_loginByPasswd(self,user,passwd,loginType,checkSplash,checkMsg,checkNickname,checkUserId,backInit,quickLogin,desc):
+        if checkSplash:
+            self.assertTrue(self.BPA.checkSplash(backInit))
+        else:
+            self.assertTrue(self.MPA.getInMyPage())  ## 进入MY页面
+            self.assertTrue(self.MPA.clickPersonInfo()) ## 点击登录
+            if loginType and loginType.strip().lower() == "mobilepassword":
+                self.assertTrue(self.MPA.loginByPasswd(user=user,passwd=passwd,checkMsg=checkMsg,checkNickname=checkNickname,checkUserId=checkUserId,backInit=backInit,quickLogin=quickLogin,desc=desc))
+            elif loginType and loginType.strip().lower() == "wechat":
+                self.assertTrue(self.MPA.loginByWechat(checkMsg,checkNickname,checkUserId,backInit,quickLogin,desc))
+            elif loginType and loginType.strip().lower() == "weibo":
+                self.assertTrue(self.MPA.loginByWeibo(checkMsg, checkNickname, checkUserId, backInit, quickLogin, desc))
+            elif loginType and loginType.strip().lower() == "email":
+                self.assertTrue(self.MPA.loginByPasswd(user,passwd,checkMsg, checkNickname, checkUserId, backInit, quickLogin, desc))
+            elif loginType and loginType.strip().lower() == "mobilecode":
+                self.assertTrue(self.MPA.loginByCode())
             else:
-                self.assertTrue(self.MPA.getInMyPage())  ## 进入MY页面
-                self.assertTrue(self.MPA.checkMyPageUI(desc)) ## 未登录检查页面元素UI
-                self.assertTrue(self.MPA.clickPersonInfo()) ## 点击登录
-                self.assertTrue(self.MPA.loginByPasswd(user=user,passwd=passwd,loginType=loginType,checkMsg=checkMsg,checkNickname=checkNickname,checkUserId=checkUserId,backInit=backInit,quickLogin=quickLogin,desc=desc))
+                print("暂不支持的登录类型")
 
 

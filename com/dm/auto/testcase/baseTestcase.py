@@ -15,8 +15,8 @@ class BaseTestcase(unittest.TestCase):
         # from com.dm.auto.testcase.tools import getTestData
         # print(getTestData("testdata/RegressionTesting.xlsx", "login"))
         desired_caps = {}
-        # cls.appPath = os.path.abspath(os.path.join(os.path.curdir,"app","dongman-qa-1.4.9_qa_1128.apk"))
-        cls.appPath = r"c:\Users\test12\Downloads\dongman-qa-1.4.9_qa_1128.apk" #windows下app的路径
+        cls.appPath = os.path.abspath(os.path.join(os.path.curdir,"app","dongman-qa-1.4.9_qa_1128.apk"))
+        # cls.appPath = r"c:\Users\test12\Downloads\dongman-qa-1.4.9_qa_1128.apk" #windows下app的路径
         desired_caps['platformName'] = 'Android'
         # desired_caps['platformVersion'] = '5.1'
 
@@ -33,7 +33,7 @@ class BaseTestcase(unittest.TestCase):
         desired_caps["unicodeKeyboard"] = True
         desired_caps["resetKeyboard"] = True
         desired_caps["automationName"] = "uiautomator2"
-        cls.driver = webdriver.Remote('http://10.35.33.196:4723/wd/hub', desired_caps)
+        cls.driver = webdriver.Remote('http://127.0.0.1:4723/wd/hub', desired_caps)
         cls.BPA = BPA(cls.driver)
         cls.MPA = MPA(cls.driver)
         cls.BPA.allowPermission()

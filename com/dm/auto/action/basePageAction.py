@@ -15,18 +15,18 @@ class BasePageAction():
         self.driver = driver
 
 
-    def waitPresents(self,loc,seconds=10):
+    def waitPresents(self,loc,seconds=10,poll_frequency=0.5):
         try:
-            ele = WebDriverWait(self.driver,seconds).until(EC.presence_of_element_located(loc))
+            ele = WebDriverWait(self.driver,seconds,poll_frequency=poll_frequency).until(EC.presence_of_element_located(loc))
             return ele
         except TimeoutException as e:
             print(e)
             print(loc)
             return False
 
-    def waitTextInPage(self,text,screenshot="",seconds=10):
+    def waitTextInPage(self,text,screenshot="",seconds=10,poll_frequency=0.5):
         try:
-            WebDriverWait(self.driver,seconds).until(lambda x:text in x.page_source)
+            WebDriverWait(self.driver,seconds,poll_frequency=poll_frequency).until(lambda x:text in x.page_source)
             if not screenshot:
                 screenshot =text
             self.savePNG(screenshot)
@@ -36,9 +36,9 @@ class BasePageAction():
             print(text)
             return False
 
-    def waitClick(self,loc,seconds=10):
+    def waitClick(self,loc,seconds=10,poll_frequency=0.5):
         try:
-            ele = WebDriverWait(self.driver,seconds).until(EC.presence_of_element_located(loc))
+            ele = WebDriverWait(self.driver,seconds,poll_frequency=poll_frequency).until(EC.presence_of_element_located(loc))
             ele.click()
             return ele
         except TimeoutException as e:
@@ -46,9 +46,9 @@ class BasePageAction():
             print(loc)
             return False
 
-    def switchPage(self,loc,seconds=10):
+    def switchPage(self,loc,seconds=10,poll_frequency=0.5):
         try:
-            ele = WebDriverWait(self.driver,seconds).until(EC.presence_of_element_located(loc))
+            ele = WebDriverWait(self.driver,seconds,poll_frequency=poll_frequency).until(EC.presence_of_element_located(loc))
             if ele.is_selected():
                 return ele
             else:
@@ -68,10 +68,9 @@ class BasePageAction():
     def savePNG(self,name,printPng=True):
         _name = os.path.abspath(os.path.join(os.path.curdir, "screenshots", name+".png"))
         self.driver.get_screenshot_as_file(_name)
+        src = "..\screenshots\%s" % name+".png"
         if printPng:
-            print(
-                r'''<img src="%(pathfilename)s"  alt="%(filename)s"  title="%(filename)s" width="30" height="20"  onclick="window.open('%(pathfilename)s')"/>%(filename)s''' %
-                {'filename':name,"pathfilename":_name})
+            print(r'''<img src="%(src)s"  alt="%(filename)s"  title="%(filename)s" height="100" width="100" class="pimg"  onclick="javascript:window.open(this.src);"/>%(filename)s''' % {'filename':name,"src":src})
 
 
 
@@ -79,37 +78,35 @@ class BasePageAction():
         print("允许获取权限")
         return self.waitClick(BP.PERMISSION,seconds=8)
 
-    def waitStaleness(self,ele,seconds=5):
+    def waitStaleness(self,ele,seconds=5,poll_frequency=0.5):
         try:
-            WebDriverWait(self.driver,seconds).until(EC.staleness_of(ele))
+            WebDriverWait(self.driver,seconds,poll_frequency=poll_frequency).until(EC.staleness_of(ele))
             return True
         except TimeoutException as e:
             print(e)
             return False
 
-    def passJump(self,seconds=30):
-        _jump = self.waitPresents(BP.JUMP,seconds=seconds)
+    def passJump(self,seconds=30,poll_frequency=0.1):
+        _jump = self.waitPresents(BP.JUMP,seconds=seconds,poll_frequency=poll_frequency)
         if _jump:
             self.savePNG("跳过出现")
             self.waitStaleness(_jump)
             self.savePNG("跳过消失")
         return True
 
-    def checkSplash(self,text,bachInit,seconds=20):
-        _splash = self.waitPresents(BP.JUMPPAGE,seconds=seconds)
-        if _splash:
+    def checkSplash(self,bachInit,seconds=20,poll_frequency=0.1):
+        _jump = self.waitPresents(BP.JUMP,seconds=seconds,poll_frequency=poll_frequency)
+        if _jump:
+            _splash = self.waitClick(BP.JUMPPAGE,seconds=seconds,poll_frequency=poll_frequency)
             self.savePNG("开屏页截屏")
-            _splash.click()
-            if text:
-                _text = self.waitTextInPage(text)
-                if _text:
-                    self.savePNG("开屏页跳转页面截屏:%s" % text)
-                    if bachInit:
-                        self.waitClick(BP.JUMPCLOSE)
-                        self.savePNG("开屏页跳转页面关闭:%s" % text)
-                    return True
-                else:
-                    return False
+            if bachInit:
+                wc = self.waitPresents(BP.WEBVIEWCLOSE)
+                time.sleep(5)
+                self.savePNG("开屏页跳转页面展示")
+                wc.click()
+                self.waitStaleness(wc)
+                self.savePNG("开屏页跳转页面关闭")
+                return True
             return True
         else:
             print("未发现开屏页")

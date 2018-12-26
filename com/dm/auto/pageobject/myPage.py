@@ -49,7 +49,7 @@ class CodeLoginPage(BasePage):
     QQLOGIN = (By.ID,"com.naver.linewebtoon.cn:id/btn_login_qq")
 
 
-class PasswdLoginPage(BasePage):
+class LoginPage(BasePage):
 
     SWITCHLOGIN = (By.ID,"com.naver.linewebtoon.cn:id/login_page_login_type")
     CLOSEBTN = (By.ID,"com.naver.linewebtoon.cn:id/id_pw_login_cn_close_btn")
@@ -65,9 +65,10 @@ class PasswdLoginPage(BasePage):
     NAVERCORPTEXT = (By.NAME,"Dongman Entertainment Corp")
     PRIVACYPOLICY = (By.ID,"com.naver.linewebtoon.cn:id/btn_privacy_policy")
     ERRORMSG = (By.ID,"com.naver.linewebtoon.cn:id/txt_error_message") ## 左下角的提示message
+    WEIBOLOGINCONFIRM = (By.ID,"com.sina.weibo:id/bnLogin") ##微博确认登录btn
 
 
-class PasswdQuickLoginPage(BasePage):
+class QuickLoginPage(BasePage):
     QUICKLOGIN = (By.ID,"com.naver.linewebtoon.cn:id/login_page_button")
     CLOSE = (By.ID,"com.naver.linewebtoon.cn:id/login_page_close")
     USER = (By.ID,"com.naver.linewebtoon.cn:id/login_page_username")
