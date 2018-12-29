@@ -115,6 +115,12 @@ class BasePageAction():
     def switchApp(self):
         print(self.driver.contexts)
 
+    def popUpClose(self):
+        popupWindow = self.waitPresents(BP.POPUPBANNER)
+        self.savePNG("弹出活动页面")
+        self.waitClick()
+
+
 
 
 

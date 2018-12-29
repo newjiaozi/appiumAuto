@@ -15,7 +15,7 @@ class BaseTestcase(unittest.TestCase):
         # from com.dm.auto.testcase.tools import getTestData
         # print(getTestData("testdata/RegressionTesting.xlsx", "login"))
         desired_caps = {}
-        cls.appPath = os.path.abspath(os.path.join(os.path.curdir,"app","dongman-qa-1.4.9_qa_1128.apk"))
+        cls.appPath = os.path.abspath(os.path.join(os.path.curdir,"app","dongman-qa-1.5.2_qa_1226.apk"))
         # cls.appPath = r"c:\Users\test12\Downloads\dongman-qa-1.4.9_qa_1128.apk" #windows下app的路径
         desired_caps['platformName'] = 'Android'
         # desired_caps['platformVersion'] = '5.1'
@@ -29,7 +29,7 @@ class BaseTestcase(unittest.TestCase):
         desired_caps["appPackage"] = "com.naver.linewebtoon.cn"
         desired_caps["appActivity"] = "com.naver.linewebtoon.splash.SplashActivity"
 
-        desired_caps['noReset'] = False
+        desired_caps['noReset'] = True
         desired_caps["unicodeKeyboard"] = True
         desired_caps["resetKeyboard"] = True
         desired_caps["automationName"] = "uiautomator2"

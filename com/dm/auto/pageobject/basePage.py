@@ -19,6 +19,12 @@ class BasePage():
     PERMISSION = (By.ID,"com.android.packageinstaller:id/permission_allow_button")
     WEBVIEWCLOSE = (By.ACCESSIBILITY_ID,"close")
 
+
+    ## 活动弹窗
+    POPUPBANNER = (By.ID,"com.naver.linewebtoon.cn:id/promotion_popup_banner")
+    POPUPBANNERCLOSE = (By.ID, "com.naver.linewebtoon.cn:id/promotion_popup_close_btn")
+
+
     ##listview
     BACK = (By.ACCESSIBILITY_ID,"转到上一层级")
     SUBSCRIBE = (By.ID,"com.naver.linewebtoon.cn:id/add_subscribe")
